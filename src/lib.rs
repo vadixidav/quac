@@ -32,10 +32,12 @@ use scell::SCell;
 
 use std::any::{TypeId, Any};
 
+/// The only primitive type of Quac. Every List implementation should be aware that it can be
+/// accessed from anywhere and be moved anywhere.
 pub trait List {
-    /// Gets an iterator over more list trait objects contained in this list.
-    fn access(&self, accessor: &mut FnMut(&List));
-    /// Links another list to this list and makes a new List.
+    /// Returns lazily-evaluted iterator over lists.
+    fn access(&self) -> Box<Iterator<Item=SCell<List>>>;
+    /// Links another list to this list.
     fn link(&mut self, other: SCell<List>);
 
     /// Acquire an inner type based on TypeId.
@@ -83,10 +85,8 @@ impl Container {
 }
 
 impl List for Container {
-    fn access(&self, accessor: &mut FnMut(&List)) {
-        for list in &self.lists {
-            accessor(&*list.borrow());
-        }
+    fn access(&self) -> Box<Iterator<Item=SCell<List>>> {
+        Box::new(self.lists.iter().cloned().collect::<Vec<_>>().into_iter())
     }
 
     fn link(&mut self, other: SCell<List>) {
