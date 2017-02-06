@@ -26,6 +26,7 @@
 //! another mechanism other than linking lists, but linking lists must be the method by which an
 //! interacting user initiates execution of a task. The programmer only interacts with the system by
 //! accessing and linking lists.
+#![feature(core_intrinsics)]
 
 extern crate scell;
 
@@ -34,6 +35,7 @@ pub use container::Container;
 
 use scell::SCell;
 use std::any::{TypeId, Any};
+use std::intrinsics::type_name;
 
 /// The only primitive type of Quac. Every List implementation should be aware that it can be
 /// accessed from anywhere and be moved anywhere.
@@ -69,7 +71,12 @@ pub trait Intercast: List {
         self.acquire(TypeId::of::<T>())
             .map(|any| {
                 any.downcast_ref::<T>()
-                    .expect("acquire() provided a type which didn't correspond to the TypeId")
+                    .unwrap_or_else(
+                        || panic!("{}::acquire() didn't provide the correct type {}",
+                               unsafe{type_name::<Self>()},
+                                unsafe{type_name::<T>()}
+                        )
+                    )
             })
     }
 
@@ -78,7 +85,12 @@ pub trait Intercast: List {
         self.acquire_mut(TypeId::of::<T>())
             .map(|any| {
                 any.downcast_mut::<T>()
-                    .expect("acquire_mut() provided a type which didn't correspond to the TypeId")
+                    .unwrap_or_else(
+                        || panic!("{}::acquire_mut() didn't provide the correct type {}",
+                               unsafe{type_name::<Self>()},
+                               unsafe{type_name::<T>()}
+                        )
+                    )
             })
     }
 }
