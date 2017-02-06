@@ -76,3 +76,5 @@ pub trait Intercast: List {
             .map(|any| any.downcast_mut::<T>().unwrap())
     }
 }
+
+impl<T> Intercast for T where T: List {}
