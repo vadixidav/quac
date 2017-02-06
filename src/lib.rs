@@ -26,3 +26,86 @@
 //! another mechanism other than linking lists, but linking lists must be the method by which an
 //! interacting user initiates execution of a task. The programmer only interacts with the system by
 //! accessing and linking lists.
+
+extern crate scell;
+use scell::SCell;
+
+use std::any::{TypeId, Any};
+
+pub trait List {
+    /// Gets an iterator over more list trait objects contained in this list.
+    fn access(&self, accessor: &mut FnMut(&List));
+    /// Links another list to this list and makes a new List.
+    fn link(&mut self, other: SCell<List>);
+
+    /// Acquire an inner type based on TypeId.
+    fn acquire(&self, typeid: TypeId) -> Option<&Any>;
+    /// Acquire an inner type based on TypeId.
+    fn acquire_mut(&mut self, typeid: TypeId) -> Option<&mut Any>;
+
+    /// Attempt downcasting an inner type based on TypeId.
+    fn attempt(&self, typeid: TypeId, attempt: &mut FnMut(&Any)) {
+        if let Some(any) = self.acquire(typeid) {
+            attempt(any);
+        }
+    }
+
+    /// Attempt downcasting an inner type mutably based on TypeId.
+    fn attempt_mut(&mut self, typeid: TypeId, attempt: &mut FnMut(&mut Any)) {
+        if let Some(any) = self.acquire_mut(typeid) {
+            attempt(any);
+        }
+    }
+}
+
+pub trait Intercast: List {
+    /// Downcast a List like Any does, except allow downcasting to multiple types.
+    fn downcast_ref<T: Any>(&self) -> Option<&T> {
+        self.acquire(TypeId::of::<T>())
+            .map(|any| any.downcast_ref::<T>().unwrap())
+    }
+
+    /// Downcast a List mutably like Any does, except allow downcasting to multiple types.
+    fn downcast_mut<T: Any>(&mut self) -> Option<&mut T> {
+        self.acquire_mut(TypeId::of::<T>())
+            .map(|any| any.downcast_mut::<T>().unwrap())
+    }
+}
+
+pub struct Container {
+    pub lists: Vec<SCell<List>>,
+}
+
+impl Container {
+    pub fn new() -> Container {
+        Container { lists: vec![] }
+    }
+}
+
+impl List for Container {
+    fn access(&self, accessor: &mut FnMut(&List)) {
+        for list in &self.lists {
+            accessor(&*list.borrow());
+        }
+    }
+
+    fn link(&mut self, other: SCell<List>) {
+        self.lists.push(other);
+    }
+
+    fn acquire(&self, typeid: TypeId) -> Option<&Any> {
+        if TypeId::of::<Self>() == typeid {
+            Some(self)
+        } else {
+            None
+        }
+    }
+
+    fn acquire_mut(&mut self, typeid: TypeId) -> Option<&mut Any> {
+        if TypeId::of::<Self>() == typeid {
+            Some(self)
+        } else {
+            None
+        }
+    }
+}
