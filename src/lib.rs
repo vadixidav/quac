@@ -2,7 +2,7 @@
 //! through submenus and reorganizing the layout of the programming environment with more
 //! specialized coding submenus. The language should feel like crafting an environment and an
 //! experience, rather than coding a program. The programmer should feel like they are in their own
-//! home, as if they know where everything is instinctively, but a home in which muscle memory
+//! home, as if they know where everything is instinctively, in which muscle memory
 //! allows you to grab the things you need right now or in the near future and put them closer to
 //! your working environment.
 //!
