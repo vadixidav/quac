@@ -39,7 +39,7 @@ use std::any::{TypeId, Any};
 /// accessed from anywhere and be moved anywhere.
 pub trait List {
     /// Returns lazily-evaluted iterator over lists.
-    fn access(&self) -> Box<Iterator<Item=SCell<List>>>;
+    fn access(&self) -> Box<Iterator<Item = SCell<List>>>;
     /// Links another list to this list.
     fn link(&mut self, other: SCell<List>);
 
@@ -67,13 +67,19 @@ pub trait Intercast: List {
     /// Downcast a List like Any does, except allow downcasting to multiple types.
     fn downcast_ref<T: Any>(&self) -> Option<&T> {
         self.acquire(TypeId::of::<T>())
-            .map(|any| any.downcast_ref::<T>().unwrap())
+            .map(|any| {
+                any.downcast_ref::<T>()
+                    .expect("acquire() provided a type which didn't correspond to the TypeId")
+            })
     }
 
     /// Downcast a List mutably like Any does, except allow downcasting to multiple types.
     fn downcast_mut<T: Any>(&mut self) -> Option<&mut T> {
         self.acquire_mut(TypeId::of::<T>())
-            .map(|any| any.downcast_mut::<T>().unwrap())
+            .map(|any| {
+                any.downcast_mut::<T>()
+                    .expect("acquire_mut() provided a type which didn't correspond to the TypeId")
+            })
     }
 }
 
