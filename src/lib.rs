@@ -12,8 +12,8 @@
 //!
 //! Accessing incredibly deep lists over and over would be inefficient and time consuming. Normal
 //! programming languages attempt to use modularized APIs to constrain things into subcontainers.
-//! Quac allows organization by linking. Linking takes one list gives it to another list. Containers
-//! are lists which take those lists and allow access to them in the future.
+//! Quac allows organization by linking. Linking takes one list and gives it to another list.
+//! Containers are lists which take those lists and allow access to them in the future.
 //!
 //! Lists can also do things, rather than just show things. Technically, a list does things when
 //! it is accessed, because it can compute things to show to the user lazily, but the list can't
