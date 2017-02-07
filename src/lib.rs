@@ -49,20 +49,6 @@ pub trait List {
     fn acquire(&self, typeid: TypeId) -> Option<&Any>;
     /// Acquire an inner type based on TypeId.
     fn acquire_mut(&mut self, typeid: TypeId) -> Option<&mut Any>;
-
-    /// Attempt downcasting an inner type based on TypeId.
-    fn attempt(&self, typeid: TypeId, attempt: &mut FnMut(&Any)) {
-        if let Some(any) = self.acquire(typeid) {
-            attempt(any);
-        }
-    }
-
-    /// Attempt downcasting an inner type mutably based on TypeId.
-    fn attempt_mut(&mut self, typeid: TypeId, attempt: &mut FnMut(&mut Any)) {
-        if let Some(any) = self.acquire_mut(typeid) {
-            attempt(any);
-        }
-    }
 }
 
 pub trait Intercast: List {

@@ -1,4 +1,4 @@
-use super::List;
+use super::{List, Intercast};
 use std::any::{TypeId, Any};
 use scell::SCell;
 
@@ -35,5 +35,27 @@ impl List for Container {
         } else {
             None
         }
+    }
+}
+
+struct Iter {
+    /// This will always be type Container.
+    container: SCell<List>,
+    ix: usize,
+}
+
+impl Iterator for Iter {
+    type Item = SCell<List>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let cb = self.container.borrow();
+        cb.downcast_ref::<Container>()
+            .expect("quac::container::Iter::container wasn't a Container")
+            .lists
+            .get(self.ix)
+            .map(|l| {
+                self.ix += 1;
+                l.clone()
+            })
     }
 }
